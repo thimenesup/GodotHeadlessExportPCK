@@ -93,9 +93,9 @@ var _dirs = []
 var dir = Directory.new()
 
 func get_dirs(path): #Recursively
-	print("Opening %s" % path)
 	dir.open(path)
 	dir.list_dir_begin(true)
+	var local_dirs = []
 	var dir_name = dir.get_next()
 	while not dir_name.empty():
 		if dir.current_is_dir() and not dir_name.begins_with("."):
@@ -105,9 +105,11 @@ func get_dirs(path): #Recursively
 				dir_path = current_dir + dir_name
 			else:
 				dir_path = current_dir + "/" + dir_name
+			local_dirs.append(dir_path)
 			_dirs.append(dir_path)
-			get_dirs(dir_path)
 		dir_name = dir.get_next()
+	for l_dir in local_dirs:
+		get_dirs(l_dir)
 
 
 func is_one_of_types(object, types):
