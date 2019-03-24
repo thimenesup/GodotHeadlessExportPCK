@@ -27,9 +27,11 @@ func _ready():
 			
 			resource._bundled = bundled_copy
 		var final_path = HEADLESS_PATH + file_path.trim_prefix("res://")
+		if not directory.dir_exists(final_path.get_base_dir()):
+			directory.make_dir_recursive(final_path.get_base_dir())
 		ResourceSaver.save(final_path, resource)
 	
-	print("Ended generating headless scenes")
+	print("Ended generating headless project")
 	
 	var headless_files = get_all_files_in(HEADLESS_PATH)
 	
@@ -78,7 +80,10 @@ func get_all_files_in(path):
 		var file_name = dir.get_next()
 		while not file_name.empty():
 			if not dir.current_is_dir():
-				files.append(dir_path + file_name)
+				if dir_path.ends_with("/"):
+					files.append(dir_path + file_name)
+				else:
+					files.append(dir_path + "/" + file_name)
 			file_name = dir.get_next()
 	return files
 
@@ -88,18 +93,21 @@ var _dirs = []
 var dir = Directory.new()
 
 func get_dirs(path): #Recursively
+	print("Opening %s" % path)
 	dir.open(path)
 	dir.list_dir_begin(true)
-	var l_dirs = []
-	var file_name = dir.get_next()
-	while not file_name.empty():
-		if dir.current_is_dir() and not file_name.begins_with("."):
-			var dir_path = dir.get_current_dir() + file_name + "/"
-			l_dirs.append(dir_path)
+	var dir_name = dir.get_next()
+	while not dir_name.empty():
+		if dir.current_is_dir() and not dir_name.begins_with("."):
+			var current_dir = dir.get_current_dir()
+			var dir_path = ""
+			if current_dir.ends_with("/"):
+				dir_path = current_dir + dir_name
+			else:
+				dir_path = current_dir + "/" + dir_name
 			_dirs.append(dir_path)
-		file_name = dir.get_next()
-	for l_dir in l_dirs:
-		get_dirs(l_dir)
+			get_dirs(dir_path)
+		dir_name = dir.get_next()
 
 
 func is_one_of_types(object, types):
